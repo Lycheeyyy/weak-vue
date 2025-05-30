@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>7.createApp</title>
+  </head>
+  <div id="app">111111111111</div>
+  <script src="../shared/dist/shared.global.js"></script>
+  <script src="../runtime-core/dist/runtime-core.global.js"></script>
+  <script src="../runtime-dom/dist/runtime-dom.global.js"></script>
+  
+  <script>
+    let { createApp } = VueRuntimeDom;
+
+    let App = {
+      render(proxy) {
+        console.log("这是组件本身自己定义的render函数！！！");
+        console.log(this,proxy); // this值被指向了proxy
+      },
+    };
+    createApp(App, { name: "张三", age: 10 }).mount("#app");
+  </script> 
+
+  <!-- <div id="app">111111111111</div>
+  <script src="../runtime-dom/dist/runtime-dom.global.js"></script>
+  <script>
+    let { createApp, h } = VueRuntimeDom;
+
+    let App = {
+      render(proxy) {
+        return h("div", { style: { color: "red" } }, "hello");
+      },
+    };
+    createApp(App, { name: "张三", age: 10 }).mount("#app");
+  </script>
+
+  <script>
+    let { createApp, h } = VueRuntimeDom;
+
+    let App = {
+      render(proxy) {
+        return h(
+          "div",
+          { style: { color: "red" } },
+          h("div", {}, ["张三", h("p", {}, "李四")])
+        );
+      },
+    };
+    createApp(App, { name: "张三", age: 10 }).mount("#app");
+  </script> -->
+</body>
+</html>

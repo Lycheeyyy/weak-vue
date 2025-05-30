@@ -1,0 +1,25 @@
+{
+  "name": "@vue/runtime-dom",
+  "version": "1.0.0",
+  "main": "dist/runtime-dom.cjs.js",
+  "module": "dist/runtime-dom.esm-bundler.js",
+  "types": "dist/runtime-dom.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/runtime-dom.esm-bundler.js",
+      "require": "./dist/runtime-dom.cjs.js"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c ../../rollup.config.cjs --environment TARGET:runtime-dom --bundleConfigAsCjs"
+  },
+  "dependencies": {
+    "@vue/shared": "^3.5.14",
+    "@vue/reactivity": "3.5.14",
+    "@vue/runtime-core": "3.5.14"
+  },
+  "buildOptions": {
+    "name": "VueRuntimeDom",
+    "formats": ["esm-bundler", "global"]
+  }
+}

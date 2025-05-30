@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "../../",  // 设置为项目根目录
+    "baseUrl": ".",
+    "paths": {
+      "@vue/runtime-core": ["../runtime-core/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "../runtime-core/src/**/*"  // 显式包含依赖的源码
+  ]
+}

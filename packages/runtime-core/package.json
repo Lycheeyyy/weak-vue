@@ -1,0 +1,24 @@
+{
+  "name": "@vue/runtime-core",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c ../../rollup.config.cjs --bundleConfigAsCjs"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "buildOptions": {
+    "name": "VueRuntimeCore",
+    "formats": ["esm-bundler","cjs", "global"]
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/runtime-core.esm-bundler.js",
+      "require": "./dist/runtime-core.cjs.js"
+    },
+    "./src/*": "./src/*"
+  }
+}

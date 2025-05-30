@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>5.toRefs</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="../reactivity/dist/reactivity.global.js"></script>
+    
+    <!--<script>
+        // toRef就是将对象的某个属性的值变成ref对象。
+        let { reactive, effect, toRef } = VueReactivity;
+        let state = { age: 10 };
+        let myAge = toRef(state, "age");
+        console.log(myAge.value);
+      </script>-->
+
+      <script>
+        // toRefs就是将对象的所有属性的值变成ref
+        let { reactive, effect, toRefs, createApp } = Vue;
+        let APP = {
+          // Vue3组件的入口函数
+          setup() {
+            let state = reactive({ name: "张三", age: 10 });
+            return { state };
+          },
+        };
+        createApp(App).mount("#app");//创建应用实例并挂载到DOM
+      </script>
+  
+
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+

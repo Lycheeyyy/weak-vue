@@ -1,0 +1,25 @@
+{
+  "name": "@vue/reactivity",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "license": "MIT",
+  "buildOptions": {
+    "name": "VueReactivity",
+    "formats": [
+      "esm-bundler",
+      "cjs",
+      "global"
+    ]
+  },
+  "scripts": {
+    "build": "rollup -c ../../rollup.config.cjs --environment TARGET=reactivity --bundleConfigAsCjs"
+  },
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "devDependencies": {
+    "rollup-plugin-typescript2": "0.34.1"
+  }
+}
