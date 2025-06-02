@@ -47,6 +47,23 @@
           ? (val) => set.has(val.toLowerCase()) //转小写
           : (val) => set.has(val);
   }
+  // 驼峰化
+  const capitalize = (str) => {
+      // e.g
+      // my-first-name
+      // myFirstName
+      // replace 第二个参数可以是一个函数
+      // 这个函数接收两个参数
+      //      match: 匹配到的子串
+      //      p1,p2,p3...: 假如 replace 第一个参数是正则表达式
+      //                   则代表第 n 个括号匹配到的字符串
+      // 如上例子中
+      // nerverUse 是 -f、-n
+      // c 是 f、n
+      return str.replace(/-(\w)/g, (neverUse, c) => (c ? c.toUpperCase() : ""));
+  };
+  // 这里是一个将 xxx-xx 转化为 onxxxXx 的工具函数
+  const toHandlerKey = (str) => (str ? `on${capitalize(str)}` : "");
 
   //在vnode.ts生成虚拟DOM节点中，第一个参数 type 不一定为根组件也可能是元素，生成的虚拟 dom 也要据此做出区分。
   //至于怎么区分，源码里面为了精确地获取节点的特性信息的同时提高渲染性能，借助了枚举，每个枚举值都是一个二进制位掩码
@@ -69,6 +86,7 @@
 
   console.log(exports.ShapeFlags);
 
+  exports.capitalize = capitalize;
   exports.extend = extend;
   exports.hasChange = hasChange;
   exports.hasOwn = hasOwn;
@@ -79,6 +97,7 @@
   exports.isObject = isObject;
   exports.isString = isString;
   exports.makeMap = makeMap;
+  exports.toHandlerKey = toHandlerKey;
 
 })(this.VueShared = this.VueShared || {});
 if(typeof window !== 'undefined') window.VueShared = VueShared;

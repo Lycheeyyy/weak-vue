@@ -1,4 +1,4 @@
-(function (exports, reactivity, shared, runtimeCore) {
+(function (exports, reactivity, shared, compilerCore, runtimeCore) {
   'use strict';
 
   /**公共方法 */
@@ -218,6 +218,9 @@
       //位运算（按位或 |）按位或操作会对 两个数字的二进制每一位进行比较：只要其中 有一位是 1，结果就为 1。只有两个位都为 0，结果才是 0。
       vnode.shapeFlag = vnode.shapeFlag | type; // 可能标识会受儿子影响
   }
+  function isVnode(vnode) {
+      return vnode._v_isVNode;
+  }
   // 元素的chldren变成vnode
   const TEXT = Symbol("text");
   function CVnode(child) {
@@ -246,6 +249,8 @@
                   //本质上是一个用 JavaScript 对象描述 DOM 结构的数据结构，也就是用 JS 模拟真实 DOM 树的结构。
                   let vnode = createVNode(rootComponent, rootProps);
                   //console.log(vnode);
+                  // 第二件事：挂载模版到vnode上（container.innerHTML被清空之前，已先把模版字符串挂载到container上）
+                  vnode.type.template = container.template;
                   // 2、将虚拟dom渲染到实际的位置
                   render(vnode, container);
                   app._container = container;
@@ -282,6 +287,41 @@
           }
       },
   };
+
+  // h函数的作用==>生成vnode（createVNode原理可以回去前面的内容看），核心之一==>处理参数
+  function h(type, propsOrChildren, children) {
+      // 先根据参数个数来处理
+      const i = arguments.length;
+      if (i === 2) {
+          // 情况1：元素+属性(传入一个对象)
+          if (shared.isObject(propsOrChildren) && !shared.isArray(propsOrChildren)) {
+              //h("div", vnode)	vnode 作为子节点	createVNode(type, null, [vnode])
+              //h("div", [vnode])	vnode数组作为 children	createVNode(type, null, propsOrChildren)
+              if (isVnode(propsOrChildren)) {
+                  // h("div", vnode)
+                  // 是vnode，不是属性
+                  return createVNode(type, null, [propsOrChildren]);
+              }
+              //是普通对象=>是props
+              // h("div", { id: 'app' })
+              return createVNode(type, propsOrChildren); // 没有儿子
+          }
+          else {
+              // 情况2：元素+children
+              // h("div", 'hello') 或 h("div", [vnode, vnode])
+              return createVNode(type, null, propsOrChildren);
+          }
+      }
+      else {
+          if (i > 3) {
+              children = Array.prototype.slice.call(arguments, 2); // 第二个参数后面的所有参数，都应该放在children数组里面
+          }
+          else if (i === 3 && isVnode(children)) { //h("div", { id: "box" }, h("span"))，第三个参数是一个vnode，是一个子节点而不是数组
+              children = [children]; //把vnode包装成一个数组
+          }
+          return createVNode(type, propsOrChildren, children);
+      }
+  }
 
   // 创建组件实例
   const createComponentInstance = (vnode) => {
@@ -371,11 +411,30 @@
       if (!instance.render) {
           // 这里的render指的是上面instance实例的render属性，在handlerSetupResult函数中会赋值（赋值的情况：组件有setup且返回函数），如果没有setup则此时会为false，则需要赋组件的render方法
           //template 是 HTML 字符串。Vue 会用它的模板编译器（@vue/compiler-dom）把它编译成 JS 渲染函数。
-          if (!Component.render && Component.template) ;
+          if (!Component.render && Component.template) {
+              // 模版编译
+              let { template } = Component;
+              if (template[0] === "#") { // Vue 支持你传一个选择器作为 template，比如：template: '#my-template'。这时你不是直接写模板字符串，而是让 Vue 去页面上找这个元素的 innerHTML 来用作模板。
+                  const el = document.querySelector(template);
+                  template = el ? el.innerHTML : "";
+              }
+              const { code } = compilerCore.baseCompile(template); // Vue 内部的 baseCompile会把 template 编译为 JavaScript 代码字符串
+              // 比如：<div>{{ count }}</div> 编译成 return h("div", null, count)
+              // console.log("这是编译后的代码", code);
+              const fn = new Function("ctx", code); // 用 new Function("ctx", code) 创建一个 动态渲染函数 比如const fn = (ctx) => h("div", null, ctx.count)
+              const ctx = shared.extend(// 构造了一个上下文对象ctx
+              { h: h }, // h：Vue 的虚拟 DOM 创建函数
+              instance.attrs, instance.props, instance.setupState);
+              const render = fn(ctx); // 将字符串里面的h函数、渲染的值以及函数都变成需要的值，而不是字符串
+              Component.render = render;
+          }
           instance.render = Component.render;
       }
       //console.log(instance.render);
   }
+  // new Function()是js提供的一个构造函数，用于动态创建一个函数对象，语法：const func = new Function([arg1, arg2, ...], functionBody);arg1,arg2,...是可选的参数名；functionBody是函数体，必须是一个字符串
+  // 比如这个const add = new Function('a', 'b', 'return a + b;');——————>console.log(add(2, 3)); // 输出 5,其实就相当于function add(a,b){return a+b;}
+  // const render = new Function("ctx", code);其中ctx是传进来的参数，code里面需要用到ctx里面的值
 
   // weak-vue\packages\runtime-core\src\apilifecycle.ts
   // 生命周期的执行
@@ -783,7 +842,12 @@
       app.mount = function (container) {
           // 挂载组件之前要清空原来的内容
           container = nodeOps.querySelector(container); //获取实际的DOM元素
-          container.innerHTML = ""; //清空
+          // 第一件事：将模版字符串挂载到container上（把标签前后的空格换行去除，防止对codegen环节造成影响），因为后续会清空container.innerHTML
+          container.template = container.innerHTML
+              .replace(/\n\s*/g, "")
+              .replace(/\s+</g, "<")
+              .replace(/>\s+/g, ">");
+          container.innerHTML = "";
           // 渲染新的内容(挂载dom)
           mount(container);
       };
@@ -798,6 +862,6 @@
     });
   });
 
-})(this.VueRuntimeDom = this.VueRuntimeDom || {}, reactivity, VueShared, VueRuntimeCore);
+})(this.VueRuntimeDom = this.VueRuntimeDom || {}, reactivity, VueShared, compilerCore, VueRuntimeCore);
 if(typeof window !== 'undefined') window.VueShared = VueShared;
 //# sourceMappingURL=runtime-dom.global.js.map

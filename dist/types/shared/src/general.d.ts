@@ -15,3 +15,5 @@ export declare const isIntegerKey: (key: any) => void;
 export declare const hasChange: (value: any, oldValue: any) => boolean;
 export declare function makeMap(str: string, //如"div,span,p"
 expectsLowerCase?: boolean): (key: string) => boolean;
+export declare const capitalize: (str: any) => any;
+export declare const toHandlerKey: (str: any) => string;

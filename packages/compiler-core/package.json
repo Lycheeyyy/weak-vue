@@ -1,0 +1,25 @@
+{
+    "name": "@vue/compiler-core",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "build": "rollup -c ../../rollup.config.cjs --bundleConfigAsCjs"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "description": "",
+    "buildOptions": {
+      "name": "VueCompilerCore",
+      "formats": ["esm-bundler","cjs", "global"]
+    },
+    "exports": {
+      ".": {
+        "import": "./dist/compiler-core.esm-bundler.js",
+        "require": "./dist/compiler-core.cjs.js"
+      },
+      "./src/*": "./src/*"
+    }
+  }
+  
